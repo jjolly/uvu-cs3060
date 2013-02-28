@@ -36,6 +36,7 @@ int main(int argc, char * argv[]) {
 
 		/* Print the current argument to stdin */
 		printf("%s\n", argv[i]);
+
 	}
 	return 0;
 }
