@@ -10,7 +10,9 @@
    array (argv[0]) points to the actual command, and each subsequent
    array element (argv[1], argv[2], etc.) points to the arguments that
    follow the command, */
+
 int main(int argc, char * argv[]) {
+
 	/* showline will be set to one when line numbers are needed */
 	int i, showline = 0;
 
