@@ -12,6 +12,7 @@
    follow the command, */
 
 int main(int argc, char * argv[]) {
+	/* Really? Do we need this? !!!FIXME!!! */
 
 	/* showline will be set to one when line numbers are needed */
 	int i, showline = 0;
