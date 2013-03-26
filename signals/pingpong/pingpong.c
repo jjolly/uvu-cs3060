@@ -53,8 +53,21 @@ void parent(int childpid)
 	{
 		/* The parent waits for the first signal. Let the child serve */
 		sigfillset(&sigmask);
+		/* Every signal active in the signal mask will be blocked during
+		   the suspend. If I want a signal to resume my code, I must
+		   delete that signal from the signal mask */
 		sigdelset(&sigmask,SIGUSR1);
+		/* The signal mask will identify all signals to be blocked for
+		   this wait. If I keep the SIGINT blocked in the sigmask, my
+		   process will not return if the user presses Ctrl-C at the
+		   keyboard. In order to let SIGINT be processed, I must remove
+		   it from this mask, or it will be blocked indefinitely. */
 		sigdelset(&sigmask,SIGINT);
+		/* Two signals are unmasked for this suspend: SIGUSR1 and SIGINT
+		   Because SIGUSR1 has a custom signal handler that does not
+		   call exit(), sigsuspend will exit on SIGUSR1.
+		   Because SIGINT is not handled, the default handler will call
+		   the exit() function, and sigsuspend will never return. */
 		sigsuspend(&sigmask);
 
 		/* A signal has been received by the parent from the child.
