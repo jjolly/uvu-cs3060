@@ -4,7 +4,7 @@
 void* printxs (void* unused)  // the thread function
 {
    while(1)
-      fputc('.', stderr);
+      fputc('x', stderr);
    return NULL;
 }
 int main ( )
