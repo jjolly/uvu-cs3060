@@ -19,7 +19,11 @@ void *isPrimeConsumer(void *ptr) {
 	struct primecheck_data *data = (struct primecheck_data *)ptr;
 
 	while(data->done == FALSE || data->count > 0) {
-		while(data->count == 0);
+		while(data->count == 0) {
+			if (data->done == TRUE) {
+				return NULL;
+			}
+		}
 
 		number = data->buffer[next_out];
 		next_out = (next_out + 1) % MAX_ITEMS;
