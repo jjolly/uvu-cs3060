@@ -3,6 +3,7 @@
 #include<pthread.h>
 
 #define DEBUG_OUTPUT
+#undef DEBUG_OUTPUT
 
 #define MAX_ITEMS (20)
 #define TRUE (1)
