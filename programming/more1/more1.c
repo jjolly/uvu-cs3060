@@ -2,7 +2,7 @@
 #include<stdlib.h>
 
 #define PAGELEN 24
-#define LINELEN 1024
+#define LINELEN 768
 
 void do_more(FILE *);
 int see_more();
