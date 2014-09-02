@@ -2,5 +2,5 @@
 #include"helper.h"
 
 void print_hello() {
-	printf("Hello Class!\n");
+	printf("Hello School!\n");
 }
