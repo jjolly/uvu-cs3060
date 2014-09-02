@@ -2,5 +2,5 @@
 #include"helper.h"
 
 void print_hello() {
-	printf("Hello, Goodbye!\n");
+	printf("Hello World!\n");
 }
