@@ -23,7 +23,7 @@ void *producer(void *ptr) {
 
 void consumer() {
 	int last = 0;
-	while(1) {
+	while(last < 65536) {
 		while(counter == 0)
 			; /* do nothing */
 		
