@@ -40,9 +40,24 @@ int count = 0;
 	add_thread_func - Simply increments the count variable INC_COUNT times
 */
 void *add_thread_func(void *p) {
+	/*
+		This mutex was provided by the main thread to protect the count
+		variable.
+	*/
+	pthread_mutex_t *pmutex = (pthread_mutex_t *)p;
 	int i;
 	for(i = 0; i < INC_COUNT; i++) {
+		/*
+			The modification of the count variable is the critical section
+			of this program. Surrounding the critical section with the
+			mutex lock and unlock should prevent the count variable from
+			becoming corrupted.
+		*/
+		pthread_mutex_lock(pmutex);
+		/* BEGIN CRITICAL SECTION */
 		count++;
+		/* END CRITICAL SECTION*/
+		pthread_mutex_unlock(pmutex);
 	}
 	return NULL;
 }
@@ -51,9 +66,24 @@ void *add_thread_func(void *p) {
 	sub_thread_func - Simply decrements the count variable INC_COUNT times
 */
 void *sub_thread_func(void *p) {
+	/*
+		This mutex was provided by the main thread to protect the count
+		variable.
+	*/
+	pthread_mutex_t *pmutex = (pthread_mutex_t *)p;
 	int i;
 	for(i = 0; i < INC_COUNT; i++) {
+		/*
+			The modification of the count variable is the critical section
+			of this program. Surrounding the critical section with the
+			mutex lock and unlock should prevent the count variable from
+			becoming corrupted.
+		*/
+		pthread_mutex_lock(pmutex);
+		/* BEGIN CRITICAL SECTION */
 		count--;
+		/* END CRITICAL SECTION*/
+		pthread_mutex_unlock(pmutex);
 	}
 	return NULL;
 }
@@ -67,15 +97,22 @@ int main() {
 	pthread_t sub_threads[THREAD_COUNT];
 	int i;
 
+	/*
+		Mutex primative that will be used to protect the global count
+		variable. Will be shared with all the threads.
+	*/
+	pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 	printf("Main thread started\n");
 
 	/*
 		Create the THREAD_COUNT * 2 threads to abuse the global count
-		variable
+		variable. Each thread will be given a mutex that will be used
+		to protect the global count variable.
 	*/
 	for ( i = 0; i < THREAD_COUNT; i++ ) {
-		pthread_create(&add_threads[i], NULL, add_thread_func, NULL);
-		pthread_create(&sub_threads[i], NULL, sub_thread_func, NULL);
+		pthread_create(&add_threads[i], NULL, add_thread_func, &count_mutex);
+		pthread_create(&sub_threads[i], NULL, sub_thread_func, &count_mutex);
 	}
 
 	printf("Main thread created child threads\n");
