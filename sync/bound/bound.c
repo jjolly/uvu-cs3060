@@ -29,9 +29,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	The global count variable is the victim of this program. Should be
 	zero by the end of the program. Rarely is.
 */
-int count = 0;
-int buffer[BUFFER_SIZE];
-sem_t sem_full, sem_empty;
+struct bufdata {
+	int buffer[BUFFER_SIZE];
+	sem_t sem_full, sem_empty;
+	int number;
+	int sum;
+};
 
 /*
 	producer_thread_func - Add elements to the buffer
@@ -39,27 +42,25 @@ sem_t sem_full, sem_empty;
 void *producer_thread_func(void *p) {
 	int in = 0;
 	int number = 1;
-	int limit = atoi((char *)p);
+	struct bufdata *pdata = (struct bufdata *)p;
 
-	while (number <= limit) {
-		sem_wait(&sem_empty);
+	while (number <= pdata->number) {
+		sem_wait(&pdata->sem_empty);
 
-		buffer[in] = number;
+		pdata->buffer[in] = number;
 
-		count++;
-		sem_post(&sem_full);
+		sem_post(&pdata->sem_full);
 
 		number++;
 
 		in = (in + 1) % BUFFER_SIZE;
 	}
 
-	sem_wait(&sem_empty);
+	sem_wait(&pdata->sem_empty);
 
-	buffer[in] = 0;
+	pdata->buffer[in] = 0;
 
-	count++;
-	sem_post(&sem_full);
+	sem_post(&pdata->sem_full);
 
 	return NULL;
 }
@@ -70,21 +71,21 @@ void *producer_thread_func(void *p) {
 void *consumer_thread_func(void *p) {
 	int out = 0;
 	int sum = 0;
+	struct bufdata* pdata = (struct bufdata*)p;
 
 	while(1) {
-		sem_wait(&sem_full);
+		sem_wait(&pdata->sem_full);
 
-		if ( buffer[out] == 0 ) break;
+		if ( pdata->buffer[out] == 0 ) break;
 
-		sum += buffer[out];
+		sum += pdata->buffer[out];
 
-		count--;
-		sem_post(&sem_empty);
+		sem_post(&pdata->sem_empty);
 
 		out = (out + 1) % BUFFER_SIZE;
 	}
 
-	*(int *)p = sum;
+	 pdata->sum = sum;
 
 	return p;
 }
@@ -97,26 +98,30 @@ int main(int argc, char *argv[]) {
 	pthread_t prod_thread;
 	pthread_t cons_thread;
 	int i, *pi;
+	struct bufdata *pdata = malloc(sizeof(struct bufdata));
 
 	printf("Main thread started\n");
 
-	if ( argc < 2 ) {
+	if ( argc < 2 || (pdata->number = atoi(argv[1])) < 1 ) {
 		printf("You need to give me a number to work with\n");
 		exit(-1);
 	}
 
-	sem_init(&sem_empty, 0, BUFFER_SIZE);
-	sem_init(&sem_full, 0, 0);
+	pdata->sum = 0;
+	sem_init(&pdata->sem_empty, 0, BUFFER_SIZE);
+	sem_init(&pdata->sem_full, 0, 0);
 
-	pthread_create(&prod_thread, NULL, producer_thread_func, argv[1]);
-	pthread_create(&cons_thread, NULL, consumer_thread_func, &i);
+	pthread_create(&prod_thread, NULL, producer_thread_func, pdata);
+	pthread_create(&cons_thread, NULL, consumer_thread_func, pdata);
 
 	printf("Main thread created child threads\n");
 
 	pthread_join(prod_thread, NULL);
-	pthread_join(cons_thread, (void **)&pi);
+	pthread_join(cons_thread, (void **)&pdata);
 
-	printf("Sum of buffer is %d\n", *pi);
+	printf("Sum of buffer is %d\n", pdata->sum);
+
+	free(pdata);
 
 	return 0;
 }
