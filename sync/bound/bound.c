@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 int count = 0;
 int buffer[BUFFER_SIZE];
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
 	producer_thread_func - Add elements to the buffer
@@ -45,7 +46,11 @@ void *producer_thread_func(void *p) {
 
 		buffer[in] = number;
 
+		pthread_mutex_lock(&mutex);
+		/* CRITICAL SECTION */
 		count++;
+		/* END CRITICAL SECTION */
+		pthread_mutex_unlock(&mutex);
 
 		number++;
 
@@ -56,7 +61,11 @@ void *producer_thread_func(void *p) {
 
 	buffer[in] = 0;
 
+	pthread_mutex_lock(&mutex);
+	/* CRITICAL SECTION */
 	count++;
+	/* END CRITICAL SECTION */
+	pthread_mutex_unlock(&mutex);
 
 	return NULL;
 }
@@ -75,7 +84,11 @@ void *consumer_thread_func(void *p) {
 
 		sum += buffer[out];
 
+		pthread_mutex_lock(&mutex);
+		/* CRITICAL SECTION */
 		count--;
+		/* END CRITICAL SECTION */
+		pthread_mutex_unlock(&mutex);
 
 		out = (out + 1) % BUFFER_SIZE;
 	}
