@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 #include<stdio.h>
 #include<stdlib.h>
-#include<pthread.h>
+#include<semaphore.h>
 
 /*
 	BUFFER_SIZE defines how many elements are available in the buffer
@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 int count = 0;
 int buffer[BUFFER_SIZE];
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+sem_t sem_full, sem_empty;
 
 /*
 	producer_thread_func - Add elements to the buffer
@@ -42,30 +42,24 @@ void *producer_thread_func(void *p) {
 	int limit = atoi((char *)p);
 
 	while (number <= limit) {
-		while (count >= BUFFER_SIZE);
+		sem_wait(&sem_empty);
 
 		buffer[in] = number;
 
-		pthread_mutex_lock(&mutex);
-		/* CRITICAL SECTION */
 		count++;
-		/* END CRITICAL SECTION */
-		pthread_mutex_unlock(&mutex);
+		sem_post(&sem_full);
 
 		number++;
 
 		in = (in + 1) % BUFFER_SIZE;
 	}
 
-	while (count >= BUFFER_SIZE);
+	sem_wait(&sem_empty);
 
 	buffer[in] = 0;
 
-	pthread_mutex_lock(&mutex);
-	/* CRITICAL SECTION */
 	count++;
-	/* END CRITICAL SECTION */
-	pthread_mutex_unlock(&mutex);
+	sem_post(&sem_full);
 
 	return NULL;
 }
@@ -78,17 +72,14 @@ void *consumer_thread_func(void *p) {
 	int sum = 0;
 
 	while(1) {
-		while(count < 1);
+		sem_wait(&sem_full);
 
 		if ( buffer[out] == 0 ) break;
 
 		sum += buffer[out];
 
-		pthread_mutex_lock(&mutex);
-		/* CRITICAL SECTION */
 		count--;
-		/* END CRITICAL SECTION */
-		pthread_mutex_unlock(&mutex);
+		sem_post(&sem_empty);
 
 		out = (out + 1) % BUFFER_SIZE;
 	}
@@ -113,6 +104,9 @@ int main(int argc, char *argv[]) {
 		printf("You need to give me a number to work with\n");
 		exit(-1);
 	}
+
+	sem_init(&sem_empty, 0, BUFFER_SIZE);
+	sem_init(&sem_full, 0, 0);
 
 	pthread_create(&prod_thread, NULL, producer_thread_func, argv[1]);
 	pthread_create(&cons_thread, NULL, consumer_thread_func, &i);
