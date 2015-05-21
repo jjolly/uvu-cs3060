@@ -1,2 +1,2 @@
 funcptr: funcptr.cpp Makefile
-	${CXX} -g -o funcptr funcptr.cpp
+	${CXX} -std=c++11 -g -o funcptr funcptr.cpp

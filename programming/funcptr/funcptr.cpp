@@ -1,20 +1,21 @@
 #include<iostream>
+#include<functional>
 
 class FuncPtr {
 	public:
 		FuncPtr(int setbase) : base(setbase) {}
 
-		void set_mult() { func_ptr = &FuncPtr::prod; }
-		void set_sum() { func_ptr = &FuncPtr::add; }
+		void set_mult() { func_ptr = std::bind(&FuncPtr::prod, this, std::placeholders::_1); }
+		void set_sum() { func_ptr = std::bind(&FuncPtr::add, this, std::placeholders::_1); }
 
 		void print_func(int x) {
-			std::cout << (this->*func_ptr)(x) << std::endl;
+			std::cout << func_ptr(x) << std::endl;
 		}
 
 	private:
 		int base;
 	
-		int (FuncPtr::*func_ptr)(int);
+		std::function<int(int)> func_ptr;
 
 		int add(int x) {
 			return x + base;
