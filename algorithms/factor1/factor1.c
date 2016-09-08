@@ -1,6 +1,6 @@
 /*
 factor1 : Factor one number given on the command line
-	Copyright (C) 2015  John L. Jolly
+	Copyright (C) 2016  John L. Jolly
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
