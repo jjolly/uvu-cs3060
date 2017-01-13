@@ -22,9 +22,9 @@ int main(int argc, char * argv[]) {
 		/* Is the first character of the current argument a dash? */
 		if( argv[i][0] == '-' ) {
 			/* The first character of the current argument is a dash.
-			   Is that dash followed by an 'n' and a nullbyte? */
-			if( argv[i][1] == 'n' && argv[i][2] == '\0' ) {
-				/* The dash-'n' was specified. Turn on line numbers */
+			   Is that dash followed by an 's' and a nullbyte? */
+			if( argv[i][1] == 's' && argv[i][2] == '\0' ) {
+				/* The dash-'s' was specified. Turn on line numbers */
 				showline = 1;
 			}
 			/* This would be a really good place to check for other
