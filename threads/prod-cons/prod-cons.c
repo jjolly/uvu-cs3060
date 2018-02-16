@@ -5,7 +5,7 @@
 #define COUNT_TO_PRODUCE (1000000)
 #define PROD_CONS_CHECK_VAL (-1)
 #define MAX_BUFFER_LEN (20)
-#define COUNT_OF_CONSUMERS (1)
+#define COUNT_OF_CONSUMERS (2)
 
 /* Lockless producer-consumer is possible, but only for */
 /* single producer/single consumer */
