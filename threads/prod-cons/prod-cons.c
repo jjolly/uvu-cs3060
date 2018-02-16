@@ -6,8 +6,10 @@
 #define PROD_CONS_CHECK_VAL (-1)
 #define MAX_BUFFER_LEN (20)
 
+/* Lockless producer-consumer is possible, but only for */
+/* single producer/single consumer */
 struct pc_buff {
-  int count;
+  int pi, ci;
   int buffer[MAX_BUFFER_LEN];
 };
 
@@ -19,25 +21,23 @@ void pthread_ret_error(const char *msg) {
 /* Producer thread function */
 void *producer_thread_func(void *p) {
   struct pc_buff *pcb = (struct pc_buff *)p;
-  int i, pi;
+  int i;
 
   for(i = 0; i < COUNT_TO_PRODUCE; i++) {
     /* spinlock while buffer is full */
-    while(COUNT_TO_PRODUCE == pcb->count);
+    while((pcb->pi + 1) % MAX_BUFFER_LEN == pcb->ci);
 
     /* Just put the number one in the buffer */
-    pcb->buffer[pi] = 1;
-    /* Increment the buffer count after adding the item */
-    pcb->count++;
+    pcb->buffer[pcb->pi] = 1;
     /* Increment the producer buffer index by one circularly */
-    pi = (pi + 1) % MAX_BUFFER_LEN;
+    pcb->pi = (pcb->pi + 1) % MAX_BUFFER_LEN;
   }
   /* Done producing. Indicate this is finished */
-  while(COUNT_TO_PRODUCE == pcb->count);
+  while((pcb->pi + 1) % MAX_BUFFER_LEN == pcb->ci);
   /* The check value -1 should never occur during production */
-  pcb->buffer[pi] = PROD_CONS_CHECK_VAL;
+  pcb->buffer[pcb->pi] = PROD_CONS_CHECK_VAL;
   /* Let the consumers know there's one last value to use */
-  pcb->count++;
+  pcb->pi = (pcb->pi + 1) % MAX_BUFFER_LEN;
 
 
   return NULL;
@@ -46,21 +46,19 @@ void *producer_thread_func(void *p) {
 /* Consumer thread function */
 void *consumer_thread_func(void *p) {
   struct pc_buff *pcb = (struct pc_buff *)p;
-  int val, ci = 0;
+  int val;
   int *result = malloc(sizeof(int));
   *result = 0;
 
   /* Loop forever and only stop when the producer indicates */
   for(;;) {
     /* spinlock while buffer is empty */
-    while(0 == pcb->count);
-    val = pcb->buffer[ci];
+    while(pcb->pi == pcb->ci);
+    val = pcb->buffer[pcb->ci];
     /* Check value found, stop looping */
     if(PROD_CONS_CHECK_VAL == val) break;
-    /* Decrement count on removed value */
-    pcb->count--;
     /* Increment the consumer buffer index by one circularly */
-    ci = (ci + 1) % MAX_BUFFER_LEN;
+    pcb->ci = (pcb->ci + 1) % MAX_BUFFER_LEN;
 
     *result += val;
   }
@@ -73,7 +71,8 @@ int main(int argc, char *argv[]) {
   int *sum, ret;
   void *result;
   struct pc_buff *pcb = malloc(sizeof(struct pc_buff));
-  pcb->count = 0;
+  pcb->pi = 0;
+  pcb->ci = 0;
 
   ret = pthread_create(&pth, NULL, producer_thread_func, pcb);
   if(ret != 0) pthread_ret_error("Unable to create producer thread");
