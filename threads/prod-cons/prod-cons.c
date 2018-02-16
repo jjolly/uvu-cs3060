@@ -5,6 +5,7 @@
 #define COUNT_TO_PRODUCE (1000000)
 #define PROD_CONS_CHECK_VAL (-1)
 #define MAX_BUFFER_LEN (20)
+#define COUNT_OF_CONSUMERS (1)
 
 /* Lockless producer-consumer is possible, but only for */
 /* single producer/single consumer */
@@ -67,8 +68,8 @@ void *consumer_thread_func(void *p) {
 }
 
 int main(int argc, char *argv[]) {
-  pthread_t pth, cth;
-  int *sum, ret;
+  pthread_t pth, cth[COUNT_OF_CONSUMERS];
+  int sum, ret, i;
   void *result;
   struct pc_buff *pcb = malloc(sizeof(struct pc_buff));
   pcb->pi = 0;
@@ -77,18 +78,22 @@ int main(int argc, char *argv[]) {
   ret = pthread_create(&pth, NULL, producer_thread_func, pcb);
   if(ret != 0) pthread_ret_error("Unable to create producer thread");
 
-  ret = pthread_create(&cth, NULL, consumer_thread_func, pcb);
-  if(ret != 0) pthread_ret_error("Unable to create consumer thread");
+  for(i = 0; i < COUNT_OF_CONSUMERS; i++) {
+    ret = pthread_create(&cth[i], NULL, consumer_thread_func, pcb);
+    if(ret != 0) pthread_ret_error("Unable to create consumer thread");
+  }
 
   ret = pthread_join(pth, NULL);
   if(ret != 0) pthread_ret_error("Unable to join producer thread");
 
-  ret = pthread_join(cth, &result);
-  if(ret != 0) pthread_ret_error("Unable to join consumer thread");
+  for(i = 0; i < COUNT_OF_CONSUMERS; i++) {
+    ret = pthread_join(cth[i], &result);
+    if(ret != 0) pthread_ret_error("Unable to join consumer thread");
   
-  sum = (int *)result;
+    sum += *(int *)result;
+  }
 
-  printf("Sum result: %d\n", *sum);
+  printf("Sum result: %d\n", sum);
 
   return 0;
 }
