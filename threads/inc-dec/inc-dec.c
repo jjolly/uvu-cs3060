@@ -4,13 +4,39 @@
 
 #define CHANGE_AMOUNT (1000000)
 
+/* Identify thread need of critical section */
+int need[2] = {0,0};
+/* Identify thread allowed to enter critical section */
+int turn;
+
+/* Peterson's Solution Lock */
+void peterson_lock(int tid) {
+  /* Define thread ID of the other thread */
+  int otid = 1 - tid;
+  /* Declare need for the critical section for this thread */
+  need[tid] = 1;
+  /* Grant use of critical section to the other thread */
+  turn = otid;
+  /* Spinlock as long as the other thread needs and is using
+     the critical section */
+  while(1 == need[otid] && turn == otid);
+}
+
+/* Peterson's Solution Unlock */
+void peterson_unlock(int tid) {
+  /* Release the need for the critical section for this thread */
+  need[tid] = 0;
+}
+
 /* Increment thread function */
 void *inc_thread_func(void *p) {
   int *num = (int *)p;
-  int i;
+  int i, tid = 0;
 
   for(i = 0; i < CHANGE_AMOUNT; i++) {
+    peterson_lock(tid);
     (*num)++;
+    peterson_unlock(tid);
   }
 
   return NULL;
@@ -19,10 +45,12 @@ void *inc_thread_func(void *p) {
 /* Decrement thread function */
 void *dec_thread_func(void *p) {
   int *num = (int *)p;
-  int i;
+  int i, tid = 1;
 
   for(i = 0; i < CHANGE_AMOUNT; i++) {
+    peterson_lock(tid);
     (*num)--;
+    peterson_unlock(tid);
   }
 
   return NULL;
