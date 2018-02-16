@@ -17,6 +17,8 @@ void peterson_lock(int tid) {
   need[tid] = 1;
   /* Grant use of critical section to the other thread */
   turn = otid;
+  /* Needed to provide a memory cache "fence" */
+  __sync_synchronize();
   /* Spinlock as long as the other thread needs and is using
      the critical section */
   while(1 == need[otid] && turn == otid);
