@@ -34,5 +34,8 @@ int main(int argc, char *argv[]) {
   thread2_args.number_to_print = 5000;
   pthread_create(&thread2_handle, NULL, char_print, &thread2_args);
 
+  pthread_join(thread1_handle, NULL);
+  pthread_join(thread2_handle, NULL);
+
   return 0;
 }
