@@ -4,30 +4,17 @@
 
 #define CHANGE_AMOUNT (1000000)
 
-/* Identify thread need of critical section */
-int need[2] = {0,0};
-/* Identify thread allowed to enter critical section */
-int turn;
+int lock_var = 0;
 
-/* Peterson's Solution Lock */
-void peterson_lock(int tid) {
-  /* Define thread ID of the other thread */
-  int otid = 1 - tid;
-  /* Declare need for the critical section for this thread */
-  need[tid] = 1;
-  /* Grant use of critical section to the other thread */
-  turn = otid;
-  /* Needed to provide a memory cache "fence" */
-  __sync_synchronize();
-  /* Spinlock as long as the other thread needs and is using
-     the critical section */
-  while(1 == need[otid] && turn == otid);
+/* Mutual Exclusion Lock using test-and-set */
+void test_and_set_lock(int *lock) {
+  /* Perform XCGH machine instruction on Intel CPUs */
+  while(__sync_lock_test_and_set(lock, 1) == 1);
 }
 
-/* Peterson's Solution Unlock */
-void peterson_unlock(int tid) {
-  /* Release the need for the critical section for this thread */
-  need[tid] = 0;
+/* Mutual Exclusion Unlock for test-and-set */
+void test_and_set_unlock(int *lock) {
+  *lock = 0;
 }
 
 /* Increment thread function */
@@ -36,9 +23,9 @@ void *inc_thread_func(void *p) {
   int i, tid = 0;
 
   for(i = 0; i < CHANGE_AMOUNT; i++) {
-    peterson_lock(tid);
+    test_and_set_lock(&lock_var);
     (*num)++;
-    peterson_unlock(tid);
+    test_and_set_unlock(&lock_var);
   }
 
   return NULL;
@@ -50,9 +37,9 @@ void *dec_thread_func(void *p) {
   int i, tid = 1;
 
   for(i = 0; i < CHANGE_AMOUNT; i++) {
-    peterson_lock(tid);
+    test_and_set_lock(&lock_var);
     (*num)--;
-    peterson_unlock(tid);
+    test_and_set_unlock(&lock_var);
   }
 
   return NULL;
