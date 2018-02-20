@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
   ret = pthread_join(pth, NULL);
   if(ret != 0) pthread_ret_error("Unable to join producer thread");
 
+  sum = 0;
   for(i = 0; i < COUNT_OF_CONSUMERS; i++) {
     ret = pthread_join(cth[i], &result);
     if(ret != 0) pthread_ret_error("Unable to join consumer thread");
