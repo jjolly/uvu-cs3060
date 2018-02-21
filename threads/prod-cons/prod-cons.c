@@ -12,6 +12,7 @@
 struct pc_buff {
   int pi, ci;
   int buffer[MAX_BUFFER_LEN];
+  pthread_mutex_t mutex;
 };
 
 void pthread_ret_error(const char *msg) {
@@ -53,6 +54,7 @@ void *consumer_thread_func(void *p) {
 
   /* Loop forever and only stop when the producer indicates */
   for(;;) {
+    pthread_mutex_lock(&pcb->mutex);
     /* spinlock while buffer is empty */
     while(pcb->pi == pcb->ci);
     val = pcb->buffer[pcb->ci];
@@ -60,9 +62,11 @@ void *consumer_thread_func(void *p) {
     if(PROD_CONS_CHECK_VAL == val) break;
     /* Increment the consumer buffer index by one circularly */
     pcb->ci = (pcb->ci + 1) % MAX_BUFFER_LEN;
+    pthread_mutex_unlock(&pcb->mutex);
 
     *result += val;
   }
+  pthread_mutex_unlock(&pcb->mutex);
 
   return result;
 }
@@ -74,6 +78,7 @@ int main(int argc, char *argv[]) {
   struct pc_buff *pcb = malloc(sizeof(struct pc_buff));
   pcb->pi = 0;
   pcb->ci = 0;
+  pthread_mutex_init(&pcb->mutex, NULL);
 
   ret = pthread_create(&pth, NULL, producer_thread_func, pcb);
   if(ret != 0) pthread_ret_error("Unable to create producer thread");
