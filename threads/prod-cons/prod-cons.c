@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
+#include<semaphore.h>
 
 #define COUNT_TO_PRODUCE (1000000)
 #define PROD_CONS_CHECK_VAL (-1)
@@ -13,7 +14,7 @@ struct pc_buff {
   int pi, ci;
   int buffer[MAX_BUFFER_LEN];
   pthread_mutex_t mutex;
-  pthread_cond_t condvar;
+  sem_t items, empty;
 };
 
 void pthread_ret_error(const char *msg) {
@@ -27,23 +28,24 @@ void *producer_thread_func(void *p) {
   int i;
 
   for(i = 0; i < COUNT_TO_PRODUCE; i++) {
-    /* spinlock while buffer is full */
-    while((pcb->pi + 1) % MAX_BUFFER_LEN == pcb->ci);
+    /* Let the semaphore perform the spinlock for an empty space as necessary */
+    sem_wait(&pcb->empty);
 
     /* Just put the number one in the buffer */
     pcb->buffer[pcb->pi] = 1;
     /* Increment the producer buffer index by one circularly */
     pcb->pi = (pcb->pi + 1) % MAX_BUFFER_LEN;
-    pthread_cond_signal(&pcb->condvar);
+
+    /* Indicate that one more item has been added to the buffer */
+    sem_post(&pcb->items);
   }
   /* Done producing. Indicate this is finished */
-  while((pcb->pi + 1) % MAX_BUFFER_LEN == pcb->ci);
+  sem_wait(&pcb->empty);
   /* The check value -1 should never occur during production */
   pcb->buffer[pcb->pi] = PROD_CONS_CHECK_VAL;
   /* Let the consumers know there's one last value to use */
   pcb->pi = (pcb->pi + 1) % MAX_BUFFER_LEN;
-  pthread_cond_signal(&pcb->condvar);
-
+  sem_post(&pcb->items);
 
   return NULL;
 }
@@ -57,10 +59,11 @@ void *consumer_thread_func(void *p) {
 
   /* Loop forever and only stop when the producer indicates */
   for(;;) {
+    /* Let the semaphore perform the spinlock for items as necessary */
+    sem_wait(&pcb->items);
+
+    /* Use the mutex to protect the consumer index from a race condition */
     pthread_mutex_lock(&pcb->mutex);
-    /* spinlock while buffer is empty */
-    while(pcb->pi == pcb->ci)
-      pthread_cond_wait(&pcb->condvar, &pcb->mutex);
     val = pcb->buffer[pcb->ci];
     /* Check value found, stop looping */
     if(PROD_CONS_CHECK_VAL == val) break;
@@ -68,9 +71,14 @@ void *consumer_thread_func(void *p) {
     pcb->ci = (pcb->ci + 1) % MAX_BUFFER_LEN;
     pthread_mutex_unlock(&pcb->mutex);
 
+    /* Bump the empty semaphore to indicate there is one more free space to use */
+    sem_post(&pcb->empty);
+
     *result += val;
   }
   pthread_mutex_unlock(&pcb->mutex);
+  /* Pretend that this thread never removed the item from the buffer */
+  sem_post(&pcb->items);
 
   return result;
 }
@@ -83,7 +91,10 @@ int main(int argc, char *argv[]) {
   pcb->pi = 0;
   pcb->ci = 0;
   pthread_mutex_init(&pcb->mutex, NULL);
-  pthread_cond_init(&pcb->condvar, NULL);
+  /* Keep track of the number of items in the buffer */
+  sem_init(&pcb->items, 0, 0);
+  /* Keep track of the number of available spaces in the buffer */
+  sem_init(&pcb->empty, 0, MAX_BUFFER_LEN);
 
   ret = pthread_create(&pth, NULL, producer_thread_func, pcb);
   if(ret != 0) pthread_ret_error("Unable to create producer thread");
