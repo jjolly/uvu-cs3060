@@ -49,6 +49,9 @@ int main(int argc, char *argv[]) {
   fcfs(count, start, run);
 }
 
+#define NEXT_Q(x) (((x) + 1) % MAX_JOBS)
+#define PREV_Q(x) (((x) - 1 + MAX_JOBS) % MAX_JOBS)
+
 void fcfs(int count, int *start, int *run) {
   int i, next_clock;
   int resp = 0, ta = 0, wait = 0, clock = 0;
@@ -67,7 +70,7 @@ void fcfs(int count, int *start, int *run) {
     // if the ready queue is empty add the next job to the queue
     while(next < count && clock >= start[next]) {
       ready[last] = next;
-      last = (last + 1) % MAX_JOBS;
+      last = NEXT_Q(last);
       remain[next] = run[next];
       next++;
     }
@@ -79,7 +82,7 @@ void fcfs(int count, int *start, int *run) {
 
     // Discover the next event (end of job for FCFS)
     // [!!!]: Each algorithm has it's own "next event", some even have two
-    next_clock = clock + run[running];
+    next_clock = clock + remain[running];
 
     // Calculate stats
     // [!!!]: Non-preemptive algorithms can have their stats calculated
@@ -90,8 +93,8 @@ void fcfs(int count, int *start, int *run) {
     wait += next_clock - start[running] - run[running];
 
     // Adjust remaining time
-    // [!!!]: This means absolutely nothing to FCFS, but other algorithms
-    // need to manage the remaining time and react to it
+    // [!!!]: This means almost absolutely nothing to FCFS, but other
+    // algorithms need to manage the remaining time and react to it
     remain[running] -= next_clock - clock;
     
     // Advance clock before processing next job
@@ -100,7 +103,7 @@ void fcfs(int count, int *start, int *run) {
     // Add arriving jobs to the ready queue
     while(next < count && clock >= start[next]) {
       ready[last] = next;
-      last = (last + 1) % MAX_JOBS;
+      last = NEXT_Q(last);
       remain[next] = run[next];
       next++;
     }
@@ -109,7 +112,7 @@ void fcfs(int count, int *start, int *run) {
     // re-added to the ready queue. This should be done after adding
     // any new jobs
 
-    curr = (curr + 1) % MAX_JOBS;
+    curr = NEXT_Q(curr);
   }
 
   printf("Avg. Resp.:%.2f, Avg. T.A.:%.2f, Avg. Wait:%.2f\n",
