@@ -36,7 +36,7 @@
 void fcfs(int, int*, int*);
 
 int main(int argc, char *argv[]) {
-  int count, start[MAX_JOBS], run[MAX_JOBS];
+  int count, in_start, in_run, start[MAX_JOBS], run[MAX_JOBS];
   FILE *fh = stdin;
 
   if(argc > 1 && NULL == (fh = fopen(argv[1], "r"))) {
@@ -44,7 +44,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  for(count = 0; count < MAX_JOBS && 2 == fscanf(fh, "%d %d", &start[count], &run[count]); count++);
+  count = 0;
+  while(count < MAX_JOBS && 2 == fscanf(fh, "%d %d", &in_start, &in_run)) {
+    start[count] = in_start;
+    run[count] = in_run;
+    count++;
+  }
 
   fcfs(count, start, run);
 }
