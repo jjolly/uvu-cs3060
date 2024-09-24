@@ -1,0 +1,37 @@
+Assignment 4: MMU Simulator by <didn't change the name>
+Op#0 (X 0x00003f48) Page fault. Illegal access to frame 10764 due to entry 2 in table at frame 7009 with access RW-
+Op#1 (R 0x0000034c) Page fault. entry 3 in table at frame 4470 is not set valid
+Op#2 (X 0x00000253) Page fault. Illegal access to frame 7006 due to entry 2 in table at frame 9551 with access RW-
+Op#3 (X 0x00000944) Page fault. entry 1 in table at frame 0 is not set valid
+Op#4 (W 0x00003ff7) Success. Physical address 0x0002a897 (Frame 5444, Access RW-)
+Op#5 (X 0x00000217) Page fault. Illegal access to frame 11376 due to entry 0 in table at frame 9551 with access R--
+Op#6 (W 0x00000258) Success. Physical address 0x00036bd8 (Frame 7006, Access RW-)
+Op#7 (W 0x00000246) Success. Physical address 0x00036bc6 (Frame 7006, Access RW-)
+Op#8 (R 0x00000079) Page fault. entry 3 in table at frame 14788 is not set valid
+Op#9 (W 0x0000276e) Page fault. entry 4 in table at frame 0 is not set valid
+Op#10 (R 0x00000244) Success. Physical address 0x00036bc4 (Frame 7006, Access RW-)
+Op#11 (R 0x000011fe) Success. Physical address 0x000069fe (Frame 847, Access RW-)
+Op#12 (X 0x0000023b) Page fault. Illegal access to frame 2338 due to entry 1 in table at frame 9551 with access R--
+Op#13 (R 0x00003f72) Success. Physical address 0x00034672 (Frame 6707, Access RW-)
+Op#14 (W 0x000000f6) Page fault. Illegal access to frame 10424 due to entry 7 in table at frame 14788 with access R-X
+Op#15 (X 0x000000f7) Success. Physical address 0x00051717 (Frame 10424, Access R-X)
+Op#16 (R 0x0000020a) Success. Physical address 0x00058e0a (Frame 11376, Access R--)
+Op#17 (X 0x000000f1) Success. Physical address 0x00051711 (Frame 10424, Access R-X)
+Op#18 (R 0x000001c6) Success. Physical address 0x000496a6 (Frame 9397, Access R-X)
+Op#19 (W 0x000011f2) Success. Physical address 0x000069f2 (Frame 847, Access RW-)
+Op#20 (W 0x00000220) Page fault. Illegal access to frame 2338 due to entry 1 in table at frame 9551 with access R--
+Op#21 (W 0x00000677) Page fault. entry 6 in table at frame 4470 is not set valid
+Op#22 (X 0x000011bb) Page fault. Illegal access to frame 14450 due to entry 5 in table at frame 15470 with access RW-
+Op#23 (W 0x000001ab) Page fault. Illegal access to frame 2067 due to entry 5 in table at frame 659 with access R-X
+Op#24 (R 0x000011f8) Success. Physical address 0x000069f8 (Frame 847, Access RW-)
+Op#25 (W 0x00003e66) Success. Physical address 0x0003c5e6 (Frame 7727, Access RW-)
+Op#26 (X 0x00003fda) Page fault. Illegal access to frame 6854 due to entry 6 in table at frame 7009 with access RW-
+Op#27 (W 0x000011bb) Success. Physical address 0x00070e5b (Frame 14450, Access RW-)
+Op#28 (R 0x00000240) Success. Physical address 0x00036bc0 (Frame 7006, Access RW-)
+Op#29 (R 0x000000a5) Success. Physical address 0x00051c85 (Frame 10468, Access R-X)
+Op#30 (W 0x00001375) Page fault. entry 3 in table at frame 1308 is not set valid
+Op#31 (X 0x000011ae) Page fault. Illegal access to frame 14450 due to entry 5 in table at frame 15470 with access RW-
+Op#32 (R 0x00003f73) Success. Physical address 0x00034673 (Frame 6707, Access RW-)
+Op#33 (R 0x00000214) Success. Physical address 0x00058e14 (Frame 11376, Access R--)
+Op#34 (X 0x0000025f) Page fault. Illegal access to frame 7006 due to entry 2 in table at frame 9551 with access RW-
+Op#35 (W 0x00000202) Page fault. Illegal access to frame 11376 due to entry 0 in table at frame 9551 with access R--
